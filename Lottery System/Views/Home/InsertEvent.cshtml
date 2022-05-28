@@ -3,10 +3,11 @@
 @{
     ViewBag.Title = "InsertEvent";
 }
-@if (TempData["Message"] != null)
+
+@if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger alert-dismissable">
-        <strong>@TempData["Message"]</strong>
+        <strong>@TempData["ErrorMessage"]</strong>
     </div>
 }
 <head>

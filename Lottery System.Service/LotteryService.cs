@@ -19,5 +19,12 @@ namespace Lottery_System.Service
             Lottery_System.Dao.LotteryDao lotteryDao = new Lottery_System.Dao.LotteryDao();
             return lotteryDao.GetEventInfo();
         }
+
+        public List<Lottery_System.Model.Employee> GetListOfWinners(string eventId)
+        {
+            Lottery_System.Dao.LotteryDao lotteryDao = new Lottery_System.Dao.LotteryDao();
+            return lotteryDao.GetListOfWinners(eventId);
+
+        }
     }
 }

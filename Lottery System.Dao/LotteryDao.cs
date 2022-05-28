@@ -30,20 +30,19 @@ namespace Lottery_System.Dao
             string sql = @"INSERT INTO EventInfo (EventName, joinNum, Awards, AwardsDes)
                             VALUES (@EventName, @joinNum, @Awards, @AwardsDes);
                             
-                            INSERT INTO Employee(EventName, EmployeeCode)
-                            SELECT @EventName AS EventName, 'A ' + CONVERT(VARCHAR(4), N)
-                            FROM 
-                            (
-                                SELECT DISTINCT NUMBER AS N
-                                FROM master.dbo.spt_values
-                                WHERE name IS NULL
-                            ) NumberPool
-                            WHERE N BETWEEN 1 AND @joinNum
-                            ORDER BY N";
-            //string sql = @"SELECT *
-            //                FROM EventInfo";
+                            ;WITH nums AS
+                               (SELECT 1 AS value
+                                UNION ALL
+                                SELECT value + 1 AS value
+                                FROM nums
+                                WHERE nums.value < @joinNum)
+                            INSERT INTO Employee(EventId, EmployeeCode)
+                            SELECT EventInfo.EventId AS EventId, CONCAT('A ', nums.value) 
+                            FROM nums, EventInfo
+                            WHERE EventInfo.EventName = @EventName
+                            OPTION(MAXRECURSION 0)";
+            
             int result;
-            DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
             {
 
@@ -54,8 +53,6 @@ namespace Lottery_System.Dao
                 cmd.Parameters.Add(new SqlParameter("@joinNum", eventInfo.joinNum));
                 cmd.Parameters.Add(new SqlParameter("@Awards", eventInfo.Awards));
                 cmd.Parameters.Add(new SqlParameter("@AwardsDes", eventInfo.AwardsDes));
-                //SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(cmd);
-                //sqlDataAdapter.Fill(dt);
                 cmd.Transaction = tran;
                 try
                 {
@@ -64,15 +61,17 @@ namespace Lottery_System.Dao
                     result = Convert.ToInt32(cmd.ExecuteScalar());
                     // Commit
                     tran.Commit();
+                    conn.Close();
                     return true;
                 }
                 catch
                 {
                     // Rollback
                     tran.Rollback();
+                    conn.Close();
                     return false;
                 }
-                conn.Close();
+                
             }
         }
 
@@ -107,10 +106,93 @@ namespace Lottery_System.Dao
         }
 
 
-        //public List<Lottery_System.Model.Employee> GetListOfWinners()
-        //{
+        public List<Lottery_System.Model.Employee> GetListOfWinners(string eventId)
+        {
+            bool updateStatus = UpDateListOfWinners(eventId);
+            List<Lottery_System.Model.Employee> employees = new List<Lottery_System.Model.Employee>();
+            return employees;
+
+        }
+
+        /// <summary>
+        /// 更新得獎名單
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <returns></returns>
+        public bool UpDateListOfWinners(string eventId)
+        {
+            string[] awardsDes = GetAwardsDes(eventId);
+            // 由尾獎開始抽
+            bool result = true;
+            for (var i = (awardsDes.Count() - 1); i >= 0; i--)
+            {
+                string sql = @"UPDATE
+                                    Emp
+                                SET
+                                    Emp.Awards = @Awards
+                                FROM
+                                    Employee AS Emp
+                                WHERE
+                                    Emp.EmployeeCode IN
+	                                (SELECT TOP (@AwardsNum) EmployeeCode FROM Employee
+	                                WHERE Employee.Awards IS NULL AND Employee.EventId = @eventId
+	                                ORDER BY NEWID()) AND Emp.EventId = @eventId";
+                using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
+                {
+
+                    conn.Open();
+                    SqlTransaction tran = conn.BeginTransaction(IsolationLevel.ReadCommitted);
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+                    cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                    cmd.Parameters.Add(new SqlParameter("@Awards", i + 1));
+                    cmd.Parameters.Add(new SqlParameter("@AwardsNum", Convert.ToInt32(awardsDes[i])));
+                    cmd.Transaction = tran;
+                    try
+                    {
+                        // 新增：將 InsertDate 方法的商業邏輯複製一份
+                        cmd.CommandText = sql;
+                        cmd.ExecuteScalar();
+                        // Commit
+                        tran.Commit();
+                        conn.Close();
+                    }
+                    catch (InvalidCastException e)
+                    {
+                        // Rollback
+                        tran.Rollback();
+                        conn.Close();
+                        result = false;
+                    }
+                }
+            }
+            return result;
+
+        }
 
 
-        //}
+        /// <summary>
+        /// 取得獎項敘述
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <returns></returns>
+        public string[] GetAwardsDes(string eventId)
+        {
+            string sql = @"SELECT AwardsDes  
+                            FROM EventInfo
+                            Where EventInfo.EventId = @eventId";
+            string result;
+            using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
+            {
+                conn.Open();
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                result = Convert.ToString(cmd.ExecuteScalar());
+                conn.Close();
+            }
+            string[] resultList = result.Split(',');
+
+            return resultList;
+
+        }
     }
 }

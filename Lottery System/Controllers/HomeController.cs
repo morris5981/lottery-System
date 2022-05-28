@@ -41,7 +41,8 @@ namespace Lottery_System.Controllers
         public string GetListOfWinners(string eventId)
         {
             Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();
-            var events = lotteryService.GetEventInfo();
+            List<Lottery_System.Model.Employee> events = new List<Lottery_System.Model.Employee>();
+            events = lotteryService.GetListOfWinners(eventId);
             return JsonConvert.SerializeObject(events);
         }
 
@@ -66,7 +67,7 @@ namespace Lottery_System.Controllers
         public ActionResult InsertEvent(Lottery_System.Model.EventInfo eventInfo, FormCollection form)
         {
             string awardsDes = "";
-            for (var i = 1; i < eventInfo.Awards; i++)
+            for (var i = 1; i <= eventInfo.Awards; i++)
             {
                 string str = "Awards" + i;
                 if (string.IsNullOrEmpty(awardsDes)){
@@ -74,7 +75,7 @@ namespace Lottery_System.Controllers
                 }
                 else
                 {
-                    awardsDes = awardsDes + ", " + form[str];
+                    awardsDes = awardsDes + "," + form[str];
                 }
             }
             eventInfo.AwardsDes = awardsDes;
@@ -82,11 +83,12 @@ namespace Lottery_System.Controllers
             var result = lotteryService.InsertNewEvent(eventInfo);
             if (result)
             {
+                TempData["SuccessMessage"] = "成功新增活動";
                 return View("Index");
             }
             else
             {
-                TempData["Message"] = "輸入錯誤(可能是輸入到重覆的活動名稱)";
+                TempData["ErrorMessage"] = "輸入錯誤(可能是輸入到重覆的活動名稱)";
                 return View();
             }
         }

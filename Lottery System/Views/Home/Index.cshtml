@@ -2,6 +2,12 @@
 @{
     ViewBag.Title = "抽獎系統";
 }
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissable">
+        <strong>@TempData["SuccessMessage"]</strong>
+    </div>
+}
 <head>
     <script type="text/javascript" src="~/Scripts/jquery-3.3.1.min.js"></script>
     <script>
