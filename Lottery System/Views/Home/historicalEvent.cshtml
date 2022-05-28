@@ -1,12 +1,6 @@
 ﻿
 @{
-    ViewBag.Title = "抽獎系統";
-}
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissable">
-        <strong>@TempData["SuccessMessage"]</strong>
-    </div>
+    ViewBag.Title = "歷史活動查詢";
 }
 
 <head>
@@ -28,41 +22,19 @@
             padding: 10px 20px;
             border: 1px solid #000;
         }
-        div.loadingdiv {
-            height: 100%;
-            /*100%覆蓋網頁內容, 避免user在loading時進行其他操作*/ width: 100%;
-            position: fixed;
-            z-index: 99999;
-            /*須大於網頁內容*/ top: 0;
-            left: 0;
-            display: block;
-            background: #000;
-            opacity: 0.6;
-            text-align: center;
-        }
-
-        div.loadingdiv img {
-            position: relative;
-            vertical-align: middle;
-            text-align: center;
-            margin: 0 auto;
-            margin-top: 50vh;
-        }
     </style>
 </head>
 
-<h2>抽獎系統</h2>
+<h2>歷史活動查詢</h2>
 
-<div class="loadingdiv" id="loading" style="display: none">
-    <img class="loading" src="image/ajax-loader.gif" alt="">
-</div>
 
 <p>選擇活動：</p>
 <select class="form-select" name="events" id="events"></select>
-<button id="lottery">抽獎</button>
+<button id="lottery">查看</button>
 
 <div id="tableBody">
-    <hr id="interval" />
+    <h2 id="eventTitle"></h2>
+    <hr id="interval"/>
     <table id="table"></table>
 </div>
 
@@ -72,32 +44,29 @@
 
         $("#lottery").click(function () {
             var beChosenEvent = Number($("#events").val());
+            var beChosenEventNum = $("#events :selected").text();
             if (beChosenEvent != 0) {
                 $.ajax({
-                    url: "../Home/GetListOfWinners?eventId=" + beChosenEvent,
+                    url: "../Home/GetHistoricalListOfWinners?eventId=" + beChosenEvent,
                     type: "post",
                     success: function (data) {
                         $(".alert").remove();
                         updateSelect();
-                        generateTable(JSON.parse(data))
-                        $('#loading').hide();
-                    },
-                    beforeSend: function () {
-                        $('#loading').show();
+                        generateTable(JSON.parse(data), beChosenEventNum);
                     }
                 });
 
             } else {
                 alert("沒有活動");
             }
-            
+
 
         });
 
         function updateSelect() {
             $("select[name=events]").empty();
             $.ajax({
-                url: "../Home/GetEvenOption?status=0",
+                url: "../Home/GetEvenOption?status=1",
                 type: "post",
                 success: function (data) {
                     var result = JSON.parse(data);
@@ -112,9 +81,10 @@
             });
         }
 
-        function generateTable(date) {
+        function generateTable(date, beChosenEventNum) {
             $("#table").remove();
             $("#interval").remove();
+            $("#eventTitle").remove();
             let table = document.createElement('table');
             table.id = 'table';
             let thead = document.createElement('thead');
@@ -124,8 +94,11 @@
 
             let hr = document.createElement('hr');
             hr.id = 'interval';
+            let h2 = document.createElement('h2');
+            h2.id = 'eventTitle'; h2.innerHTML = beChosenEventNum;
             // Adding the entire table to the body tag
             document.getElementById('tableBody').appendChild(hr);
+            document.getElementById('tableBody').appendChild(h2);
             document.getElementById('tableBody').appendChild(table);
 
             let row_1 = document.createElement('tr');
@@ -142,7 +115,7 @@
             for (var i = 0; i < date.length; i++) {
                 let row = document.createElement('tr');
                 let row_data_1 = document.createElement('td');
-                row_data_1.innerHTML = date[i]["Awards"] ;
+                row_data_1.innerHTML = date[i]["Awards"];
                 let row_data_2 = document.createElement('td');
                 row_data_2.innerHTML = date[i]["EmployeeCode"];
                 row.appendChild(row_data_1);
@@ -152,7 +125,7 @@
 
         }
     });
-    
-    
+
+
 
 </script>

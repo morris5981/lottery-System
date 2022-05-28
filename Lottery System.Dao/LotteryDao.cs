@@ -78,11 +78,22 @@ namespace Lottery_System.Dao
         /// Get event info
         /// </summary>
         /// <returns></returns>
-        public List<Lottery_System.Model.EventInfo> GetEventInfo()
+        public List<Lottery_System.Model.EventInfo> GetEventInfo(string status)
         {
-            string sql = @"SELECT *
-                            FROM EventInfo
-                            WHERE EventInfo.isSelected = 0";
+            string sql = @"";
+            if (status == "0")
+            {
+                sql = @"SELECT *
+                        FROM EventInfo
+                        WHERE EventInfo.isSelected = 0";
+            }
+            else
+            {
+                sql = @"SELECT *
+                        FROM EventInfo
+                        WHERE EventInfo.isSelected = 1";
+            }
+            
             DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
             {
@@ -105,7 +116,12 @@ namespace Lottery_System.Dao
             return eventInfos;
         }
 
-
+        /// <summary>
+        /// 取得獲獎人員以及更新名單
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <param name="status"></param>
+        /// <returns></returns>
         public List<Lottery_System.Model.Employee> GetListOfWinners(string eventId)
         {
             bool upDateListOfWinnersStatus = UpDateListOfWinners(eventId);
@@ -141,6 +157,44 @@ namespace Lottery_System.Dao
             {
                 return null;
             }
+
+        }
+
+
+        /// <summary>
+        /// 取得歷史獲獎人員
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        public List<Lottery_System.Model.Employee> GetHistoricalListOfWinners(string eventId)
+        {
+            
+            UpDateEventInfos(eventId);
+            string sql = @"SELECT *  
+                            FROM Employee
+                            WHERE Employee.EventId = @eventId AND Employee.Awards IS NOT NULL
+                            ORDER BY Employee.Awards ASC";
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
+            {
+                conn.Open();
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(cmd);
+                sqlDataAdapter.Fill(dt);
+                conn.Close();
+            }
+            List<Lottery_System.Model.Employee> employeeList = new List<Lottery_System.Model.Employee>();
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                Lottery_System.Model.Employee employee = new Lottery_System.Model.Employee();
+                employee.EventId = Convert.ToInt32(dt.Rows[i]["EventId"]);
+                employee.EmployeeCode = dt.Rows[i]["EmployeeCode"].ToString();
+                employee.Awards = Convert.ToInt32(dt.Rows[i]["Awards"]);
+                employeeList.Add(employee);
+            }
+            return employeeList;
 
         }
 

@@ -25,10 +25,10 @@ namespace Lottery_System.Controllers
         /// <param name="form"></param>
         /// <returns></returns>
         [HttpPost()]
-        public string Index(FormCollection form)
+        public string GetEvenOption(string status)
         {
             Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();
-            var events = lotteryService.GetEventInfo();
+            var events = lotteryService.GetEventInfo(status);
             return JsonConvert.SerializeObject(events);
         }
 
@@ -45,6 +45,21 @@ namespace Lottery_System.Controllers
             events = lotteryService.GetListOfWinners(eventId);
             return JsonConvert.SerializeObject(events);
             
+        }
+
+        /// <summary>
+        /// 取得歷史獲獎名單
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [HttpPost()]
+        public string GetHistoricalListOfWinners(string eventId)
+        {
+            Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();
+            List<Lottery_System.Model.Employee> events = new List<Lottery_System.Model.Employee>();
+            events = lotteryService.GetHistoricalListOfWinners(eventId);
+            return JsonConvert.SerializeObject(events);
+
         }
 
 
@@ -92,6 +107,17 @@ namespace Lottery_System.Controllers
                 TempData["ErrorMessage"] = "輸入錯誤(可能是輸入到重覆的活動名稱)";
                 return View();
             }
+        }
+
+        
+        /// <summary>
+        /// 歷史活動頁面
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet()]
+        public ActionResult historicalEvent()
+        {
+            return View();
         }
     }
 }
