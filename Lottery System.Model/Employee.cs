@@ -11,11 +11,16 @@ namespace Lottery_System.Model
         /// <summary>
         /// 員工編號
         /// </summary>
-        public int EmployeeId { get; set; }
+        public int EventId { get; set; }
 
         /// <summary>
-        /// 員工部門
+        /// 員工編號
         /// </summary>
-        public string Department { get; set; }
+        public string EmployeeCode { get; set; }
+
+        /// <summary>
+        /// 獲得獎項
+        /// </summary>
+        public int Awards { get; set; }
     }
 }

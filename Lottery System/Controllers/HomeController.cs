@@ -44,6 +44,7 @@ namespace Lottery_System.Controllers
             List<Lottery_System.Model.Employee> events = new List<Lottery_System.Model.Employee>();
             events = lotteryService.GetListOfWinners(eventId);
             return JsonConvert.SerializeObject(events);
+            
         }
 
 

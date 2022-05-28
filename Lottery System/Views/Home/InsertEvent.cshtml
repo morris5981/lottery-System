@@ -28,7 +28,7 @@
 </head>
 <h2></h2>
 
-@using (Html.BeginForm())
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "target" }))
 {
     @Html.AntiForgeryToken()
 
@@ -61,7 +61,6 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                @*<input type="submit" value="新增" class="btn btn-default" />*@
                 <button type="button" id="newEvents">設定獎項</button>
             </div>
         </div>
@@ -76,58 +75,65 @@
 
 
 <script>
-    $("#newEvents").click(function () {
-        var awardNum = Number($(".Awards").val());
-        if (awardNum == 0) {
-            alert("獎項需要有效數值");
-        } else {
-            $("#table").remove();
-            $("#submit").remove();
-            let table = document.createElement('table');
-            table.id = 'table';
-            let thead = document.createElement('thead');
-            let tbody = document.createElement('tbody');
+    $(document).ready(function () {
+        $("#newEvents").click(function () {
+            var awardNum = Number($(".Awards").val());
+            if (awardNum == 0) {
+                alert("獎項需要有效數值");
+            } else {
+                $("#table").remove();
+                $("#submit").remove();
+                let table = document.createElement('table');
+                table.id = 'table';
+                let thead = document.createElement('thead');
+                let tbody = document.createElement('tbody');
 
-            table.appendChild(thead);
-            table.appendChild(tbody);
+                table.appendChild(thead);
+                table.appendChild(tbody);
 
-            // Adding the entire table to the body tag
-            document.getElementById('tableBody').appendChild(table);
+                // Adding the entire table to the body tag
+                document.getElementById('tableBody').appendChild(table);
 
-            let row_1 = document.createElement('tr');
-            let heading_1 = document.createElement('th');
-            heading_1.innerHTML = "獎項";
-            let heading_2 = document.createElement('th');
-            heading_2.innerHTML = "中獎人數";
+                let row_1 = document.createElement('tr');
+                let heading_1 = document.createElement('th');
+                heading_1.innerHTML = "獎項";
+                let heading_2 = document.createElement('th');
+                heading_2.innerHTML = "中獎人數";
 
-            row_1.appendChild(heading_1);
-            row_1.appendChild(heading_2);
-            thead.appendChild(row_1);
+                row_1.appendChild(heading_1);
+                row_1.appendChild(heading_2);
+                thead.appendChild(row_1);
 
 
-            for (var i = 1; i <= awardNum; i++) {
-                let row = document.createElement('tr');
-                let row_data_1 = document.createElement('td');
-                row_data_1.innerHTML = i;
-                let row_data_2 = document.createElement('td');
-                var textfield = document.createElement("input");
-                textfield.type = "number"; textfield.value = "";
-                textfield.name = "Awards" + i;
-                textfield.min = 1; textfield.value = 1;
-                row_data_2.appendChild(textfield);
-                row.appendChild(row_data_1);
-                row.appendChild(row_data_2);
-                tbody.appendChild(row);
+                for (var i = 1; i <= awardNum; i++) {
+                    let row = document.createElement('tr');
+                    let row_data_1 = document.createElement('td');
+                    row_data_1.innerHTML = i;
+                    let row_data_2 = document.createElement('td');
+                    var textfield = document.createElement("input");
+                    textfield.type = "number"; textfield.value = "";
+                    textfield.name = "Awards" + i;
+                    textfield.min = 1; textfield.value = 1;
+                    row_data_2.appendChild(textfield);
+                    row.appendChild(row_data_1);
+                    row.appendChild(row_data_2);
+                    tbody.appendChild(row);
+                }
+
+
+                var submitfield = document.createElement("button");
+                submitfield.type = "button"; submitfield.innerText = "新增活動";
+                submitfield.id = "submitBtn"; submitfield.class = "btn btn -default";
+                submitfield.style = "margin: 10px 0px 0px 0px";
+                document.getElementById('tableBody').appendChild(submitfield);
+                $("#submitBtn").click(function () {
+                    alert("產生人員，請稍後");
+                    $("#target").submit();
+                });
             }
 
-
-            var submitfield = document.createElement("input");
-            submitfield.type = "submit"; submitfield.value = "新增活動";
-            submitfield.id = "submit"; submitfield.class = "btn btn -default";
-            submitfield.style = "margin: 10px 0px 0px 0px";
-            document.getElementById('tableBody').appendChild(submitfield);
-        }
-
+        });
+        
     });
 </script>
 

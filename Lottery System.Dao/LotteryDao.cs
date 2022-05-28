@@ -56,7 +56,6 @@ namespace Lottery_System.Dao
                 cmd.Transaction = tran;
                 try
                 {
-                    // 新增：將 InsertDate 方法的商業邏輯複製一份
                     cmd.CommandText = sql;
                     result = Convert.ToInt32(cmd.ExecuteScalar());
                     // Commit
@@ -82,7 +81,8 @@ namespace Lottery_System.Dao
         public List<Lottery_System.Model.EventInfo> GetEventInfo()
         {
             string sql = @"SELECT *
-                            FROM EventInfo";
+                            FROM EventInfo
+                            WHERE EventInfo.isSelected = 0";
             DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
             {
@@ -108,9 +108,39 @@ namespace Lottery_System.Dao
 
         public List<Lottery_System.Model.Employee> GetListOfWinners(string eventId)
         {
-            bool updateStatus = UpDateListOfWinners(eventId);
-            List<Lottery_System.Model.Employee> employees = new List<Lottery_System.Model.Employee>();
-            return employees;
+            bool upDateListOfWinnersStatus = UpDateListOfWinners(eventId);
+            if (upDateListOfWinnersStatus)
+            {
+                UpDateEventInfos(eventId);
+                string sql = @"SELECT *  
+                                FROM Employee
+                                WHERE Employee.EventId = @eventId AND Employee.Awards IS NOT NULL
+                                ORDER BY Employee.Awards DESC";
+                DataTable dt = new DataTable();
+                using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
+                {
+                    conn.Open();
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+                    cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                    SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(cmd);
+                    sqlDataAdapter.Fill(dt);
+                    conn.Close();
+                }
+                List<Lottery_System.Model.Employee> employeeList = new List<Lottery_System.Model.Employee>();
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    Lottery_System.Model.Employee employee = new Lottery_System.Model.Employee();
+                    employee.EventId = Convert.ToInt32(dt.Rows[i]["EventId"]);
+                    employee.EmployeeCode = dt.Rows[i]["EmployeeCode"].ToString();
+                    employee.Awards = Convert.ToInt32(dt.Rows[i]["Awards"]);
+                    employeeList.Add(employee);
+                }
+                return employeeList;
+            }
+            else
+            {
+                return null;
+            }
 
         }
 
@@ -149,7 +179,6 @@ namespace Lottery_System.Dao
                     cmd.Transaction = tran;
                     try
                     {
-                        // 新增：將 InsertDate 方法的商業邏輯複製一份
                         cmd.CommandText = sql;
                         cmd.ExecuteScalar();
                         // Commit
@@ -166,9 +195,33 @@ namespace Lottery_System.Dao
                 }
             }
             return result;
-
         }
 
+        /// <summary>
+        /// 更新活動資料
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <returns></returns>
+        public void UpDateEventInfos(string eventId)
+        {
+            string sql = @"UPDATE
+                                EventInfo
+                            SET
+                                EventInfo.isSelected = 1
+                            FROM
+                                EventInfo
+                            WHERE
+                                EventInfo.EventId = @eventId";
+            using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
+            {
+
+                conn.Open();
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                cmd.ExecuteScalar();
+                conn.Close();
+            }
+        }
 
         /// <summary>
         /// 取得獎項敘述

@@ -17,44 +17,138 @@
             });
         })
     </script>
+    <style>
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        th, td {
+            padding: 10px 20px;
+            border: 1px solid #000;
+        }
+        div.loadingdiv {
+            height: 100%;
+            /*100%覆蓋網頁內容, 避免user在loading時進行其他操作*/ width: 100%;
+            position: fixed;
+            z-index: 99999;
+            /*須大於網頁內容*/ top: 0;
+            left: 0;
+            display: block;
+            background: #000;
+            opacity: 0.6;
+            text-align: center;
+        }
+
+        div.loadingdiv img {
+            position: relative;
+            vertical-align: middle;
+            text-align: center;
+            margin: 0 auto;
+            margin-top: 50vh;
+        }
+    </style>
 </head>
 
 <h2></h2>
 
+<div class="loadingdiv" id="loading" style="display: none">
+    <img class="loading" src="image/ajax-loader.gif" alt="">
+</div>
 
 <p>選擇活動：</p>
 <select class="form-select" name="events" id="events"></select>
 <button id="lottery">抽獎</button>
 
+<div id="tableBody">
+    <table id="table"></table>
+</div>
 
 <script>
+    $(document).ready(function () {
+        updateSelect()
 
-    $("#lottery").click(function () {
-        var beChosenEvent = Number($("#events").val());
-        $.ajax({
-            url: "../Home/GetListOfWinners?eventId=" + beChosenEvent,
-            type: "post",
-            success: function (data) {
-                console.log(data);
+        $("#lottery").click(function () {
+            var beChosenEvent = Number($("#events").val());
+            if (beChosenEvent != 0) {
+                $.ajax({
+                    url: "../Home/GetListOfWinners?eventId=" + beChosenEvent,
+                    type: "post",
+                    success: function (data) {
+                        $(".alert").remove();
+                        updateSelect();
+                        generateTable(JSON.parse(data))
+                        $('#loading').hide();
+                    },
+                    beforeSend: function () {
+                        $('#loading').show();
+                    }
+                });
+
+            } else {
+                alert("沒有活動");
             }
-        })
-        //window.location.href = "../Home/InsertEmployees";
-    });
+            
 
-    $("select[name=events]").empty();
-    $.ajax({
-        url: "../Home/Index",
-        type: "post",
-        success: function (data) {
-            var result = JSON.parse(data);
-            if (result.length != 0) {
-                for (var i = 0; i < result.length; i++) {
-                    var option = "<option value=\"" + result[i]["EventId"] + "\"";
-                    option += ">" + result[i]["EventName"] + "</option>";  //動態新增資料
-                    $("select[name=events]").append(option);
+        });
+
+        function updateSelect() {
+            $("select[name=events]").empty();
+            $.ajax({
+                url: "../Home/Index",
+                type: "post",
+                success: function (data) {
+                    var result = JSON.parse(data);
+                    if (result.length != 0) {
+                        for (var i = 0; i < result.length; i++) {
+                            var option = "<option value=\"" + result[i]["EventId"] + "\"";
+                            option += ">" + result[i]["EventName"] + "</option>";  //動態新增資料
+                            $("select[name=events]").append(option);
+                        }
+                    }
                 }
+            });
+        }
+
+        function generateTable(date) {
+            $("#table").remove();
+            let table = document.createElement('table');
+            table.id = 'table';
+            let thead = document.createElement('thead');
+            let tbody = document.createElement('tbody');
+            table.appendChild(thead);
+            table.appendChild(tbody);
+
+            let hr = document.createElement('hr');
+            // Adding the entire table to the body tag
+            document.getElementById('tableBody').appendChild(hr);
+            document.getElementById('tableBody').appendChild(table);
+
+            let row_1 = document.createElement('tr');
+            let heading_1 = document.createElement('th');
+            heading_1.innerHTML = "獎項";
+            let heading_2 = document.createElement('th');
+            heading_2.innerHTML = "得獎人";
+
+            row_1.appendChild(heading_1);
+            row_1.appendChild(heading_2);
+            thead.appendChild(row_1);
+
+
+            for (var i = 0; i < date.length; i++) {
+                let row = document.createElement('tr');
+                let row_data_1 = document.createElement('td');
+                row_data_1.innerHTML = date[i]["Awards"] ;
+                let row_data_2 = document.createElement('td');
+                row_data_2.innerHTML = date[i]["EmployeeCode"];
+                row.appendChild(row_data_1);
+                row.appendChild(row_data_2);
+                tbody.appendChild(row);
             }
+
         }
     });
+    
+    
 
 </script>
