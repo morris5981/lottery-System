@@ -1,0 +1,6 @@
+C:\Users\morri\OneDrive\桌面\Lottery System\Lottery System.Common\bin\Debug\Lottery System.Common.dll
+C:\Users\morri\OneDrive\桌面\Lottery System\Lottery System.Common\bin\Debug\Lottery System.Common.pdb
+C:\Users\morri\OneDrive\桌面\Lottery System\Lottery System.Common\obj\Debug\Lottery System.Common.csprojAssemblyReference.cache
+C:\Users\morri\OneDrive\桌面\Lottery System\Lottery System.Common\obj\Debug\Lottery System.Common.csproj.CoreCompileInputs.cache
+C:\Users\morri\OneDrive\桌面\Lottery System\Lottery System.Common\obj\Debug\Lottery System.Common.dll
+C:\Users\morri\OneDrive\桌面\Lottery System\Lottery System.Common\obj\Debug\Lottery System.Common.pdb

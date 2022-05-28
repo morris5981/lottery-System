@@ -1,0 +1,54 @@
+﻿
+@{
+    ViewBag.Title = "抽獎系統";
+}
+<head>
+    <script type="text/javascript" src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#selector').change(function () {
+                alert($('#selector').val());
+            });
+        })
+    </script>
+</head>
+
+<h2></h2>
+
+
+<p>選擇活動：</p>
+<select class="form-select" name="events" id="events"></select>
+<button id="lottery">抽獎</button>
+
+
+<script>
+
+    $("#lottery").click(function () {
+        var beChosenEvent = Number($("#events").val());
+        $.ajax({
+            url: "../Home/GetListOfWinners?eventId=" + beChosenEvent,
+            type: "post",
+            success: function (data) {
+                console.log(data);
+            }
+        })
+        //window.location.href = "../Home/InsertEmployees";
+    });
+
+    $("select[name=events]").empty();
+    $.ajax({
+        url: "../Home/Index",
+        type: "post",
+        success: function (data) {
+            var result = JSON.parse(data);
+            if (result.length != 0) {
+                for (var i = 0; i < result.length; i++) {
+                    var option = "<option value=\"" + result[i]["EventId"] + "\"";
+                    option += ">" + result[i]["EventName"] + "</option>";  //動態新增資料
+                    $("select[name=events]").append(option);
+                }
+            }
+        }
+    });
+
+</script>
