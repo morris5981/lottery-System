@@ -139,7 +139,7 @@ namespace Lottery_System.Controllers
             }
             else
             {
-                TempData["ErrorMessage"] = "格式輸入錯誤，或活動名稱重覆)";
+                TempData["ErrorMessage"] = "格式輸入錯誤，或活動名稱重覆";
                 return View();
             }
         }
