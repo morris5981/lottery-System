@@ -29,7 +29,7 @@ namespace Lottery_System.Model
         [DisplayName("獎項")]
         [Range(1, 9999, ErrorMessage = "無效的輸入")]
         [Required(ErrorMessage = "此欄位必填")]
-        public int Awards { get; set; }
+        public int AwardsNum { get; set; }
 
         public string AwardsDes { get; set; }
     }

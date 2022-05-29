@@ -38,13 +38,43 @@ namespace Lottery_System.Controllers
         /// <param name="form"></param>
         /// <returns></returns>
         [HttpPost()]
-        public string GetListOfWinners(string eventId)
+        public string GetListOfWinners(string eventId, string award)
         {
             Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();
             List<Lottery_System.Model.Employee> events = new List<Lottery_System.Model.Employee>();
-            events = lotteryService.GetListOfWinners(eventId);
+            events = lotteryService.GetListOfWinners(eventId, award);
             return JsonConvert.SerializeObject(events);
             
+        }
+
+        /// <summary>
+        /// 取得活動獎項
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        [HttpPost()]
+        public string GetEventAwards(string eventId)
+        {
+            Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();
+            List<Lottery_System.Model.AwardsInfo> awardsInfos = new List<Lottery_System.Model.AwardsInfo>();
+            awardsInfos = lotteryService.GetAwardsDes(eventId);
+            return JsonConvert.SerializeObject(awardsInfos);
+
+        }
+
+
+        /// <summary>
+        /// 取得歷史活動獎項
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <returns></returns>
+        public string GetHistoricalEventAwards(string eventId)
+        {
+            Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();
+            List<Lottery_System.Model.AwardsInfo> awardsInfos = new List<Lottery_System.Model.AwardsInfo>();
+            awardsInfos = lotteryService.GetHistoricalEventAwards(eventId);
+            return JsonConvert.SerializeObject(awardsInfos);
+
         }
 
         /// <summary>
@@ -53,11 +83,11 @@ namespace Lottery_System.Controllers
         /// <param name="form"></param>
         /// <returns></returns>
         [HttpPost()]
-        public string GetHistoricalListOfWinners(string eventId)
+        public string GetHistoricalListOfWinners(string eventId, string award)
         {
             Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();
             List<Lottery_System.Model.Employee> events = new List<Lottery_System.Model.Employee>();
-            events = lotteryService.GetHistoricalListOfWinners(eventId);
+            events = lotteryService.GetHistoricalListOfWinners(eventId, award);
             return JsonConvert.SerializeObject(events);
 
         }
@@ -82,16 +112,21 @@ namespace Lottery_System.Controllers
         [HttpPost()]
         public ActionResult InsertEvent(Lottery_System.Model.EventInfo eventInfo, FormCollection form)
         {
+            if (!ModelState.IsValid)
+            {
+                // Return to the page with the Validation errorsMessages.
+                return View();
+            }
             string awardsDes = "";
-            for (var i = 1; i <= eventInfo.Awards; i++)
+            for (var i = 1; i <= eventInfo.AwardsNum; i++)
             {
                 string str = "Awards" + i;
                 if (string.IsNullOrEmpty(awardsDes)){
-                    awardsDes = form[str];
+                    awardsDes = i + ":" + form[str];
                 }
                 else
                 {
-                    awardsDes = awardsDes + "," + form[str];
+                    awardsDes = awardsDes + "," + i + ":" + form[str];
                 }
             }
             eventInfo.AwardsDes = awardsDes;
@@ -104,7 +139,7 @@ namespace Lottery_System.Controllers
             }
             else
             {
-                TempData["ErrorMessage"] = "輸入錯誤(可能是輸入到重覆的活動名稱)";
+                TempData["ErrorMessage"] = "格式輸入錯誤，或活動名稱重覆)";
                 return View();
             }
         }

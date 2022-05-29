@@ -27,8 +27,8 @@ namespace Lottery_System.Dao
         /// <returns></returns>
         public bool InsertNewEvent(Lottery_System.Model.EventInfo eventInfo)
         {
-            string sql = @"INSERT INTO EventInfo (EventName, joinNum, Awards, AwardsDes)
-                            VALUES (@EventName, @joinNum, @Awards, @AwardsDes);
+            string sql = @"INSERT INTO EventInfo (EventName, joinNum, AwardsNum, AwardsDes)
+                            VALUES (@EventName, @joinNum, @AwardsNum, @AwardsDes);
                             
                             ;WITH nums AS
                                (SELECT 1 AS value
@@ -51,7 +51,7 @@ namespace Lottery_System.Dao
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.Add(new SqlParameter("@EventName", eventInfo.EventName));
                 cmd.Parameters.Add(new SqlParameter("@joinNum", eventInfo.joinNum));
-                cmd.Parameters.Add(new SqlParameter("@Awards", eventInfo.Awards));
+                cmd.Parameters.Add(new SqlParameter("@AwardsNum", eventInfo.AwardsNum));
                 cmd.Parameters.Add(new SqlParameter("@AwardsDes", eventInfo.AwardsDes));
                 cmd.Transaction = tran;
                 try
@@ -90,8 +90,7 @@ namespace Lottery_System.Dao
             else
             {
                 sql = @"SELECT *
-                        FROM EventInfo
-                        WHERE EventInfo.isSelected = 1";
+                        FROM EventInfo";
             }
             
             DataTable dt = new DataTable();
@@ -110,7 +109,7 @@ namespace Lottery_System.Dao
                 eventInfo.EventId = Convert.ToInt32(dt.Rows[i]["EventId"]);
                 eventInfo.EventName = dt.Rows[i]["EventName"].ToString();
                 eventInfo.joinNum = Convert.ToInt32(dt.Rows[i]["joinNum"]);
-                eventInfo.Awards = Convert.ToInt32(dt.Rows[i]["Awards"]);
+                eventInfo.AwardsNum = Convert.ToInt32(dt.Rows[i]["AwardsNum"]);
                 eventInfos.Add(eventInfo);
             }
             return eventInfos;
@@ -122,22 +121,22 @@ namespace Lottery_System.Dao
         /// <param name="eventId"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        public List<Lottery_System.Model.Employee> GetListOfWinners(string eventId)
+        public List<Lottery_System.Model.Employee> GetListOfWinners(string eventId, string award)
         {
-            bool upDateListOfWinnersStatus = UpDateListOfWinners(eventId);
+            bool upDateListOfWinnersStatus = UpDateListOfWinners(eventId, award);
             if (upDateListOfWinnersStatus)
             {
-                UpDateEventInfos(eventId);
+                UpDateAwardsDes(eventId, award);
                 string sql = @"SELECT *  
                                 FROM Employee
-                                WHERE Employee.EventId = @eventId AND Employee.Awards IS NOT NULL
-                                ORDER BY Employee.Awards DESC";
+                                WHERE Employee.EventId = @eventId AND Employee.Awards = @award";
                 DataTable dt = new DataTable();
                 using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
                 {
                     conn.Open();
                     SqlCommand cmd = new SqlCommand(sql, conn);
                     cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                    cmd.Parameters.Add(new SqlParameter("@award", award));
                     SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(cmd);
                     sqlDataAdapter.Fill(dt);
                     conn.Close();
@@ -167,20 +166,18 @@ namespace Lottery_System.Dao
         /// <param name="eventId"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        public List<Lottery_System.Model.Employee> GetHistoricalListOfWinners(string eventId)
+        public List<Lottery_System.Model.Employee> GetHistoricalListOfWinners(string eventId, string award)
         {
-            
-            UpDateEventInfos(eventId);
             string sql = @"SELECT *  
                             FROM Employee
-                            WHERE Employee.EventId = @eventId AND Employee.Awards IS NOT NULL
-                            ORDER BY Employee.Awards ASC";
+                            WHERE Employee.EventId = @eventId AND Employee.Awards = @award";
             DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
             {
                 conn.Open();
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                cmd.Parameters.Add(new SqlParameter("@award", award));
                 SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(cmd);
                 sqlDataAdapter.Fill(dt);
                 conn.Close();
@@ -203,86 +200,130 @@ namespace Lottery_System.Dao
         /// </summary>
         /// <param name="eventId"></param>
         /// <returns></returns>
-        public bool UpDateListOfWinners(string eventId)
+        public bool UpDateListOfWinners(string eventId, string award)
         {
-            string[] awardsDes = GetAwardsDes(eventId);
+            List<Lottery_System.Model.AwardsInfo> awardsInfos = new List<Lottery_System.Model.AwardsInfo>();
+            awardsInfos = GetAwardsDes(eventId);
             // 由尾獎開始抽
             bool result = true;
-            for (var i = (awardsDes.Count() - 1); i >= 0; i--)
+            string sql = @"UPDATE
+                                Emp
+                            SET
+                                Emp.Awards = @Awards
+                            FROM
+                                Employee AS Emp
+                            WHERE
+                                Emp.EmployeeCode IN
+	                            (SELECT TOP (@AwardsNum) EmployeeCode FROM Employee
+	                            WHERE Employee.Awards IS NULL AND Employee.EventId = @eventId
+	                            ORDER BY NEWID()) AND Emp.EventId = @eventId";
+            using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
             {
-                string sql = @"UPDATE
-                                    Emp
-                                SET
-                                    Emp.Awards = @Awards
-                                FROM
-                                    Employee AS Emp
-                                WHERE
-                                    Emp.EmployeeCode IN
-	                                (SELECT TOP (@AwardsNum) EmployeeCode FROM Employee
-	                                WHERE Employee.Awards IS NULL AND Employee.EventId = @eventId
-	                                ORDER BY NEWID()) AND Emp.EventId = @eventId";
-                using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
-                {
 
-                    conn.Open();
-                    SqlTransaction tran = conn.BeginTransaction(IsolationLevel.ReadCommitted);
-                    SqlCommand cmd = new SqlCommand(sql, conn);
-                    cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
-                    cmd.Parameters.Add(new SqlParameter("@Awards", i + 1));
-                    cmd.Parameters.Add(new SqlParameter("@AwardsNum", Convert.ToInt32(awardsDes[i])));
-                    cmd.Transaction = tran;
-                    try
+                conn.Open();
+                SqlTransaction tran = conn.BeginTransaction(IsolationLevel.ReadCommitted);
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                cmd.Parameters.Add(new SqlParameter("@Awards", award));
+                int AwardsNum = 0;
+                for (var i=0; i< awardsInfos.Count; i++)
+                {
+                    if (awardsInfos[i].Awards == Convert.ToInt32(award))
                     {
-                        cmd.CommandText = sql;
-                        cmd.ExecuteScalar();
-                        // Commit
-                        tran.Commit();
-                        conn.Close();
+                        AwardsNum = awardsInfos[i].AwardsNum;
+                        break;
                     }
-                    catch (InvalidCastException e)
-                    {
-                        // Rollback
-                        tran.Rollback();
-                        conn.Close();
-                        result = false;
-                    }
+                }
+                cmd.Parameters.Add(new SqlParameter("@AwardsNum", AwardsNum));
+                cmd.Transaction = tran;
+                try
+                {
+                    cmd.CommandText = sql;
+                    cmd.ExecuteScalar();
+                    // Commit
+                    tran.Commit();
+                    conn.Close();
+                }
+                catch (InvalidCastException e)
+                {
+                    // Rollback
+                    tran.Rollback();
+                    conn.Close();
+                    result = false;
                 }
             }
             return result;
         }
+        
 
         /// <summary>
-        /// 更新活動資料
+        /// 更新獎項描述
         /// </summary>
         /// <param name="eventId"></param>
-        /// <returns></returns>
-        public void UpDateEventInfos(string eventId)
+        /// <param name="award"></param>
+        public void UpDateAwardsDes(string eventId, string award)
         {
-            string sql = @"UPDATE
-                                EventInfo
-                            SET
-                                EventInfo.isSelected = 1
-                            FROM
-                                EventInfo
-                            WHERE
-                                EventInfo.EventId = @eventId";
+            List<Lottery_System.Model.AwardsInfo> awardsInfos = new List<Lottery_System.Model.AwardsInfo>();
+            awardsInfos = GetAwardsDes(eventId);
+            string awardsDes = "";
+            for (var i = 0; i < awardsInfos.Count; i++)
+            {
+                if (awardsInfos[i].Awards == Convert.ToInt32(award))
+                {
+                    continue;
+                }
+                if (string.IsNullOrEmpty(awardsDes))
+                {
+                    awardsDes = awardsInfos[i].Awards + ":" + awardsInfos[i].AwardsNum;
+                }
+                else
+                {
+                    awardsDes = awardsDes + "," + awardsInfos[i].Awards + ":" + awardsInfos[i].AwardsNum;
+                }
+            }
+            string sql = @"";
+            if (string.IsNullOrEmpty(awardsDes))
+            {
+                sql = @"UPDATE
+                            EventInfo
+                        SET
+                            EventInfo.isSelected = 1
+                        FROM
+                            EventInfo
+                        WHERE
+                            EventInfo.EventId = @eventId";
+            }
+            else
+            {
+                sql = @"UPDATE
+                            EventInfo
+                        SET
+                            EventInfo.AwardsDes = @awardsDes
+                        FROM
+                            EventInfo
+                        WHERE
+                            EventInfo.EventId = @eventId";
+            }
+            
             using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
             {
 
                 conn.Open();
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                cmd.Parameters.Add(new SqlParameter("@awardsDes", awardsDes));
                 cmd.ExecuteScalar();
                 conn.Close();
             }
         }
+
 
         /// <summary>
         /// 取得獎項敘述
         /// </summary>
         /// <param name="eventId"></param>
         /// <returns></returns>
-        public string[] GetAwardsDes(string eventId)
+        public List<Lottery_System.Model.AwardsInfo> GetAwardsDes(string eventId)
         {
             string sql = @"SELECT AwardsDes  
                             FROM EventInfo
@@ -297,8 +338,54 @@ namespace Lottery_System.Dao
                 conn.Close();
             }
             string[] resultList = result.Split(',');
+            List<Lottery_System.Model.AwardsInfo> awardsInfos = new List<Lottery_System.Model.AwardsInfo>();
+            for (var i = 0; i < resultList.Length; i++)
+            {
+                Lottery_System.Model.AwardsInfo awardsInfo = new Lottery_System.Model.AwardsInfo();
+                string[] temp = resultList[i].Split(':');
+                awardsInfo.Awards = Convert.ToInt32(temp[0]);
+                awardsInfo.AwardsNum = Convert.ToInt32(temp[1]);
+                awardsInfos.Add(awardsInfo);
+            }
 
-            return resultList;
+            return awardsInfos;
+
+        }
+
+        /// <summary>
+        /// 取得歷史活動獎項
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <returns></returns>
+        public List<Lottery_System.Model.AwardsInfo> GetHistoricalEventAwards(string eventId)
+        {
+            string sql = @"SELECT Awards, COUNT(Employee.Awards) AS AwardsNum  
+                            FROM Employee
+                            WHERE
+                                Employee.EventId = @eventId AND Employee.Awards IS NOT NULL
+                            GROUP BY Awards
+                            ORDER BY Awards ASC";
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
+            {
+                conn.Open();
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.Add(new SqlParameter("@eventId", eventId));
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(cmd);
+                sqlDataAdapter.Fill(dt);
+                conn.Close();
+            }
+
+            List<Lottery_System.Model.AwardsInfo> awardsInfos = new List<Lottery_System.Model.AwardsInfo>();
+            for (var i = 0; i < dt.Rows.Count; i++)
+            {
+                Lottery_System.Model.AwardsInfo awardsInfo = new Lottery_System.Model.AwardsInfo();
+                awardsInfo.Awards = Convert.ToInt32(dt.Rows[i]["Awards"]);
+                awardsInfo.AwardsNum = Convert.ToInt32(dt.Rows[i]["AwardsNum"]);
+                awardsInfos.Add(awardsInfo);
+            }
+
+            return awardsInfos;
 
         }
     }

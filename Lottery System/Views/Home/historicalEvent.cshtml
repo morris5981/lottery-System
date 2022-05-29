@@ -27,14 +27,16 @@
 
 <h2>歷史活動查詢</h2>
 
+<div id="awardsOptionArea">
+    <p>選擇活動：</p>
+    <select class="form-select" name="events" id="events"></select>
+    <button id="selectAwards">選擇獎項</button>
+</div>
 
-<p>選擇活動：</p>
-<select class="form-select" name="events" id="events"></select>
-<button id="lottery">查看</button>
 
 <div id="tableBody">
     <h2 id="eventTitle"></h2>
-    <hr id="interval"/>
+    <hr id="interval" />
     <table id="table"></table>
 </div>
 
@@ -42,27 +44,79 @@
     $(document).ready(function () {
         updateSelect()
 
-        $("#lottery").click(function () {
+        // click 選擇獎項
+        $("#selectAwards").click(function () {
             var beChosenEvent = Number($("#events").val());
-            var beChosenEventNum = $("#events :selected").text();
             if (beChosenEvent != 0) {
                 $.ajax({
-                    url: "../Home/GetHistoricalListOfWinners?eventId=" + beChosenEvent,
+                    url: "../Home/GetHistoricalEventAwards?eventId=" + beChosenEvent,
                     type: "post",
                     success: function (data) {
                         $(".alert").remove();
-                        updateSelect();
-                        generateTable(JSON.parse(data), beChosenEventNum);
+                        generateSelect(JSON.parse(data));
                     }
                 });
-
             } else {
                 alert("沒有活動");
             }
-
-
         });
 
+        // generate select options
+        function generateSelect(data) {
+            $("select[name=awardsOption]").remove();
+            $("#lottery").remove();
+            var select = document.createElement('select');
+            select.name = "awardsOption"; select.id = "awardsOption";
+            select.class = "form-select";
+            document.getElementById('awardsOptionArea').appendChild(select);
+            if (data.length != 0) {
+                for (var i = 0; i < data.length; i++) {
+                    var option = "<option value=\"" + data[i]["Awards"] + "\"";
+                    option += ">獎項" + data[i]["Awards"] + "</option>";  //動態新增資料
+                    $("select[name=awardsOption]").append(option);
+                }
+            }
+            // create lottery button 
+            var button = document.createElement('button');
+            button.id = "lottery"; button.innerHTML = "抽獎";
+            button.style = "margin:0px 0px 0px 10px;width: 50px; height: 50px;";
+            document.getElementById('awardsOptionArea').appendChild(button);
+
+            $("#lottery").click(function () {
+                var beChosenEvent = Number($("#events").val());
+                var beChosenAward = Number($("#awardsOption").val());
+                var beChosenEventName = $("#events :selected").text();
+                var beChosenAwardName = $("#awardsOption :selected").text();
+                if (beChosenEvent != 0) {
+                    $.ajax({
+                        url: "../Home/GetHistoricalListOfWinners?eventId=" + beChosenEvent + "&award=" + beChosenAward,
+                        type: "post",
+                        success: function (data) {
+                            $(".alert").remove();
+                            $("select[name=awardsOption]").remove();
+                            $("#lottery").remove();
+                            generateTable(JSON.parse(data), beChosenEventName, beChosenAwardName)
+                            $('#loading').hide();
+                        },
+                        beforeSend: function () {
+                            $('#loading').show();
+                        }
+                    });
+
+                } else {
+                    alert("沒有活動");
+                }
+            });
+        }
+
+        // change other event
+        $("#events").change(function () {
+            $("select[name=awardsOption]").remove();
+            $("#lottery").remove();
+        });
+
+       
+        // update select list
         function updateSelect() {
             $("select[name=events]").empty();
             $.ajax({
@@ -81,30 +135,32 @@
             });
         }
 
-        function generateTable(date, beChosenEventNum) {
+        // generate result table
+        function generateTable(date, beChosenEventName, beChosenAwardName) {
             $("#table").remove();
             $("#interval").remove();
-            $("#eventTitle").remove();
-            let table = document.createElement('table');
+            $("#beChosenEventTitle").remove();
+            var table = document.createElement('table');
             table.id = 'table';
-            let thead = document.createElement('thead');
-            let tbody = document.createElement('tbody');
+            var thead = document.createElement('thead');
+            var tbody = document.createElement('tbody');
             table.appendChild(thead);
             table.appendChild(tbody);
 
-            let hr = document.createElement('hr');
+            var hr = document.createElement('hr');
             hr.id = 'interval';
-            let h2 = document.createElement('h2');
-            h2.id = 'eventTitle'; h2.innerHTML = beChosenEventNum;
+            var h2 = document.createElement('h2');
+            h2.innerHTML = beChosenEventName + "  " + beChosenAwardName;
+            h2.id = 'beChosenEventTitle';
             // Adding the entire table to the body tag
             document.getElementById('tableBody').appendChild(hr);
             document.getElementById('tableBody').appendChild(h2);
             document.getElementById('tableBody').appendChild(table);
 
-            let row_1 = document.createElement('tr');
-            let heading_1 = document.createElement('th');
+            var row_1 = document.createElement('tr');
+            var heading_1 = document.createElement('th');
             heading_1.innerHTML = "獎項";
-            let heading_2 = document.createElement('th');
+            var heading_2 = document.createElement('th');
             heading_2.innerHTML = "得獎人";
 
             row_1.appendChild(heading_1);
@@ -113,10 +169,10 @@
 
 
             for (var i = 0; i < date.length; i++) {
-                let row = document.createElement('tr');
-                let row_data_1 = document.createElement('td');
+                var row = document.createElement('tr');
+                var row_data_1 = document.createElement('td');
                 row_data_1.innerHTML = date[i]["Awards"];
-                let row_data_2 = document.createElement('td');
+                var row_data_2 = document.createElement('td');
                 row_data_2.innerHTML = date[i]["EmployeeCode"];
                 row.appendChild(row_data_1);
                 row.appendChild(row_data_2);

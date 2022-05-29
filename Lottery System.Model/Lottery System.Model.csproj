@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AwardsInfo.cs" />
     <Compile Include="Employee.cs" />
     <Compile Include="EventInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
