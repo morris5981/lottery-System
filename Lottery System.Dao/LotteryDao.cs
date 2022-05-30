@@ -376,7 +376,7 @@ namespace Lottery_System.Dao
             }
             string[] resultList = result.Split(',');
             List<Lottery_System.Model.AwardsInfo> awardsInfos = new List<Lottery_System.Model.AwardsInfo>();
-            for (var i = resultList.Length-1; i >= 0; i--)
+            for (var i = 0; i < resultList.Length; i++)
             {
                 Lottery_System.Model.AwardsInfo awardsInfo = new Lottery_System.Model.AwardsInfo();
                 string[] temp = resultList[i].Split(':');

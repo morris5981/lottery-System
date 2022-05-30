@@ -28,3 +28,13 @@ C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\obj\
 C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\obj\Debug\Lottery System.Model.csproj.CopyComplete
 C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\obj\Debug\Lottery System.Model.dll
 C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\obj\Debug\Lottery System.Model.pdb
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\bin\Debug\Lottery System.Model.dll
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\bin\Debug\Lottery System.Model.pdb
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\bin\Debug\System.Web.Mvc.dll
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\bin\Debug\System.Web.Mvc.xml
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\bin\Debug\zh-Hant\System.Web.Mvc.resources.dll
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\obj\Debug\Lottery System.Model.csprojAssemblyReference.cache
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\obj\Debug\Lottery System.Model.csproj.CoreCompileInputs.cache
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\obj\Debug\Lottery System.Model.csproj.CopyComplete
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\obj\Debug\Lottery System.Model.dll
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Model\obj\Debug\Lottery System.Model.pdb
