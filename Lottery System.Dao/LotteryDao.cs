@@ -281,7 +281,7 @@ namespace Lottery_System.Dao
                     tran.Commit();
                     conn.Close();
                 }
-                catch (InvalidCastException e)
+                catch
                 {
                     // Rollback
                     tran.Rollback();

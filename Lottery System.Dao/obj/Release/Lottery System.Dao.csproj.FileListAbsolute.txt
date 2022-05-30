@@ -9,3 +9,14 @@ C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Dao\obj\Re
 C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Dao\obj\Release\Lottery System.Dao.csproj.CopyComplete
 C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Dao\obj\Release\Lottery System.Dao.dll
 C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Dao\obj\Release\Lottery System.Dao.pdb
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\bin\Release\Lottery System.Dao.dll
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\bin\Release\Lottery System.Dao.pdb
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\bin\Release\Lottery System.Common.dll
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\bin\Release\Lottery System.Model.dll
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\bin\Release\Lottery System.Common.pdb
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\bin\Release\Lottery System.Model.pdb
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\obj\Release\Lottery System.Dao.csprojAssemblyReference.cache
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\obj\Release\Lottery System.Dao.csproj.CoreCompileInputs.cache
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\obj\Release\Lottery System.Dao.csproj.CopyComplete
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\obj\Release\Lottery System.Dao.dll
+C:\Users\morri\OneDrive\桌面\v1\lottery-System\Lottery System.Dao\obj\Release\Lottery System.Dao.pdb

@@ -98,7 +98,7 @@
             select.class = "form-select";
             document.getElementById('awardsOptionArea').appendChild(select);
             if (data.length != 0) {
-                for (var i = 0; i < data.length; i++) {
+                for (var i = data.length-1; i >= 0; i--) {
                     var option = "<option value=\"" + data[i]["Awards"] + "\"";
                     option += ">獎項" + data[i]["Awards"] + "</option>";  //動態新增資料
                     $("select[name=awardsOption]").append(option);
