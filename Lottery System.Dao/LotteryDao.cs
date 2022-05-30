@@ -89,8 +89,10 @@ namespace Lottery_System.Dao
             }
             else
             {
-                sql = @"SELECT *
-                        FROM EventInfo";
+                sql = @"SELECT EventInfo.EventId, EventInfo.EventName, EventInfo.joinNum, EventInfo.AwardsNum, EventInfo.AwardsDes, EventInfo.isSelected
+                        FROM EventInfo, Employee
+                        WHERE EventInfo.EventId = Employee.EventId AND Employee.Awards IS NOT NULL
+                        GROUP BY EventInfo.EventId, EventInfo.EventName, EventInfo.joinNum, EventInfo.AwardsNum, EventInfo.AwardsDes, EventInfo.isSelected";
             }
             
             DataTable dt = new DataTable();
