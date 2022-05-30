@@ -118,9 +118,15 @@ namespace Lottery_System.Controllers
                 return View();
             }
             string awardsDes = "";
+            bool errorInput = false;
             for (var i = 1; i <= eventInfo.AwardsNum; i++)
             {
                 string str = "Awards" + i;
+                if (Convert.ToInt32(form[str]) <= 0)
+                {
+                    errorInput = true;
+                    break;
+                }
                 if (string.IsNullOrEmpty(awardsDes)){
                     awardsDes = i + ":" + form[str];
                 }
@@ -128,6 +134,11 @@ namespace Lottery_System.Controllers
                 {
                     awardsDes = awardsDes + "," + i + ":" + form[str];
                 }
+            }
+            if (errorInput)
+            {
+                TempData["ErrorMessage"] = "中獎人數輸入錯誤";
+                return View();
             }
             eventInfo.AwardsDes = awardsDes;
             Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();

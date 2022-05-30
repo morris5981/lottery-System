@@ -1,0 +1,9 @@
+C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\bin\Release\Lottery System.Model.dll
+C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\bin\Release\Lottery System.Model.pdb
+C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\bin\Release\System.Web.Mvc.dll
+C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\bin\Release\System.Web.Mvc.xml
+C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\bin\Release\zh-Hant\System.Web.Mvc.resources.dll
+C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\obj\Release\Lottery System.Model.csproj.CoreCompileInputs.cache
+C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\obj\Release\Lottery System.Model.csproj.CopyComplete
+C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\obj\Release\Lottery System.Model.dll
+C:\Users\ChenMao\Desktop\lottery System\lottery-System\Lottery System.Model\obj\Release\Lottery System.Model.pdb
