@@ -41,7 +41,7 @@ namespace Lottery_System.Controllers
         public string GetListOfWinners(string eventId, string award)
         {
             Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();
-            List<Lottery_System.Model.Employee> events = new List<Lottery_System.Model.Employee>();
+            List<Lottery_System.Model.targetEvent> events = new List<Lottery_System.Model.targetEvent>();
             events = lotteryService.GetListOfWinners(eventId, award);
             return JsonConvert.SerializeObject(events);
             
@@ -86,7 +86,7 @@ namespace Lottery_System.Controllers
         public string GetHistoricalListOfWinners(string eventId, string award)
         {
             Lottery_System.Service.LotteryService lotteryService = new Lottery_System.Service.LotteryService();
-            List<Lottery_System.Model.Employee> events = new List<Lottery_System.Model.Employee>();
+            List<Lottery_System.Model.targetEvent> events = new List<Lottery_System.Model.targetEvent>();
             events = lotteryService.GetHistoricalListOfWinners(eventId, award);
             return JsonConvert.SerializeObject(events);
 

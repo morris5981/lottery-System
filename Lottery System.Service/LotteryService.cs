@@ -20,14 +20,14 @@ namespace Lottery_System.Service
             return lotteryDao.GetEventInfo(status);
         }
 
-        public List<Lottery_System.Model.Employee> GetListOfWinners(string eventId, string award)
+        public List<Lottery_System.Model.targetEvent> GetListOfWinners(string eventId, string award)
         {
             Lottery_System.Dao.LotteryDao lotteryDao = new Lottery_System.Dao.LotteryDao();
             return lotteryDao.GetListOfWinners(eventId, award);
 
         }
 
-        public List<Lottery_System.Model.Employee> GetHistoricalListOfWinners(string eventId, string award)
+        public List<Lottery_System.Model.targetEvent> GetHistoricalListOfWinners(string eventId, string award)
         {
             Lottery_System.Dao.LotteryDao lotteryDao = new Lottery_System.Dao.LotteryDao();
             return lotteryDao.GetHistoricalListOfWinners(eventId, award);

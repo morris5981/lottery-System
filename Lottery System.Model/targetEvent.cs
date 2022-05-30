@@ -6,13 +6,8 @@ using System.Threading.Tasks;
 
 namespace Lottery_System.Model
 {
-    public class Employee
+    public class targetEvent
     {
-        /// <summary>
-        /// 員工編號
-        /// </summary>
-        public int EventId { get; set; }
-
         /// <summary>
         /// 員工編號
         /// </summary>

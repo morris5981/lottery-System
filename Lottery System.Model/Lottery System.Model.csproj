@@ -46,9 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AwardsInfo.cs" />
-    <Compile Include="Employee.cs" />
     <Compile Include="EventInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="targetEvent.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

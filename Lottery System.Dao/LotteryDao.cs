@@ -30,17 +30,33 @@ namespace Lottery_System.Dao
             string sql = @"INSERT INTO EventInfo (EventName, joinNum, AwardsNum, AwardsDes)
                             VALUES (@EventName, @joinNum, @AwardsNum, @AwardsDes);
                             
-                            ;WITH nums AS
-                               (SELECT 1 AS value
+                            DECLARE @SQL NVARCHAR(max)
+                            DECLARE @count varchar(255)
+                            DECLARE @generateNum int
+                            DECLARE @generateEventName varchar(255)
+                            SET @generateNum = @joinNum
+                            SET @generateEventName = @EventName
+                            SET @count = CONCAT('event', (SELECT EventInfo.EventId FROM EventInfo
+	                            WHERE EventInfo.EventName = @EventName))
+
+                            SET @SQL=N'CREATE TABLE ' + @count + '(
+                                EmployeeCode varchar(255),
+	                            Awards int
+                            );'
+                            EXEC(@SQL)
+
+                            SET @SQL=N';WITH nums AS
+                                (SELECT 1 AS value
                                 UNION ALL
                                 SELECT value + 1 AS value
                                 FROM nums
-                                WHERE nums.value < @joinNum)
-                            INSERT INTO Employee(EventId, EmployeeCode)
-                            SELECT EventInfo.EventId AS EventId, CONCAT('A ', nums.value) 
+                                WHERE nums.value < ' + CAST(@generateNum AS NVARCHAR(10)) + ')
+                            INSERT INTO ' + @count + '(EmployeeCode)
+                            SELECT CONCAT(''A '', nums.value) 
                             FROM nums, EventInfo
-                            WHERE EventInfo.EventName = @EventName
-                            OPTION(MAXRECURSION 0)";
+                            WHERE EventInfo.EventName = ''' + @generateEventName + '''
+                            OPTION(MAXRECURSION 0)'
+                            EXEC(@SQL)";
             
             int result;
             using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
@@ -63,7 +79,7 @@ namespace Lottery_System.Dao
                     conn.Close();
                     return true;
                 }
-                catch
+                catch(Exception e)
                 {
                     // Rollback
                     tran.Rollback();
@@ -85,14 +101,13 @@ namespace Lottery_System.Dao
             {
                 sql = @"SELECT *
                         FROM EventInfo
-                        WHERE EventInfo.isSelected = 0";
+                        WHERE EventInfo.isSelected != 2";
             }
             else
             {
-                sql = @"SELECT EventInfo.EventId, EventInfo.EventName, EventInfo.joinNum, EventInfo.AwardsNum, EventInfo.AwardsDes, EventInfo.isSelected
-                        FROM EventInfo, Employee
-                        WHERE EventInfo.EventId = Employee.EventId AND Employee.Awards IS NOT NULL
-                        GROUP BY EventInfo.EventId, EventInfo.EventName, EventInfo.joinNum, EventInfo.AwardsNum, EventInfo.AwardsDes, EventInfo.isSelected";
+                sql = @"SELECT *
+                        FROM EventInfo
+                        WHERE EventInfo.isSelected != 0";
             }
             
             DataTable dt = new DataTable();
@@ -123,15 +138,21 @@ namespace Lottery_System.Dao
         /// <param name="eventId"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        public List<Lottery_System.Model.Employee> GetListOfWinners(string eventId, string award)
+        public List<Lottery_System.Model.targetEvent> GetListOfWinners(string eventId, string award)
         {
             bool upDateListOfWinnersStatus = UpDateListOfWinners(eventId, award);
             if (upDateListOfWinnersStatus)
             {
                 UpDateAwardsDes(eventId, award);
-                string sql = @"SELECT *  
-                                FROM Employee
-                                WHERE Employee.EventId = @eventId AND Employee.Awards = @award";
+                string sql = @"DECLARE @SQL NVARCHAR(max)
+                                DECLARE @targetEventId int
+                                DECLARE @targetAwards int
+                                SET @targetEventId = @eventId
+                                SET @targetAwards = @award
+                                SET @SQL = N'SELECT * FROM event'+ CAST(@targetEventId AS NVARCHAR(10)) +' AS targetEvent
+                                WHERE targetEvent.Awards = '+ CAST(@targetAwards AS NVARCHAR(10))
+                                EXEC(@SQL)
+                                ";
                 DataTable dt = new DataTable();
                 using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
                 {
@@ -143,16 +164,15 @@ namespace Lottery_System.Dao
                     sqlDataAdapter.Fill(dt);
                     conn.Close();
                 }
-                List<Lottery_System.Model.Employee> employeeList = new List<Lottery_System.Model.Employee>();
+                List<Lottery_System.Model.targetEvent> targetEvents = new List<Lottery_System.Model.targetEvent>();
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
-                    Lottery_System.Model.Employee employee = new Lottery_System.Model.Employee();
-                    employee.EventId = Convert.ToInt32(dt.Rows[i]["EventId"]);
-                    employee.EmployeeCode = dt.Rows[i]["EmployeeCode"].ToString();
-                    employee.Awards = Convert.ToInt32(dt.Rows[i]["Awards"]);
-                    employeeList.Add(employee);
+                    Lottery_System.Model.targetEvent targetEvent = new Lottery_System.Model.targetEvent();
+                    targetEvent.EmployeeCode = dt.Rows[i]["EmployeeCode"].ToString();
+                    targetEvent.Awards = Convert.ToInt32(dt.Rows[i]["Awards"]);
+                    targetEvents.Add(targetEvent);
                 }
-                return employeeList;
+                return targetEvents;
             }
             else
             {
@@ -168,11 +188,17 @@ namespace Lottery_System.Dao
         /// <param name="eventId"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        public List<Lottery_System.Model.Employee> GetHistoricalListOfWinners(string eventId, string award)
+        public List<Lottery_System.Model.targetEvent> GetHistoricalListOfWinners(string eventId, string award)
         {
-            string sql = @"SELECT *  
-                            FROM Employee
-                            WHERE Employee.EventId = @eventId AND Employee.Awards = @award";
+            string sql = @"DECLARE @SQL NVARCHAR(max)
+                            DECLARE @targetEventId int
+                            DECLARE @targetAwards int
+                            SET @targetEventId = @eventId
+                            SET @targetAwards = @award
+                            SET @SQL = N'SELECT * FROM event'+ CAST(@targetEventId AS NVARCHAR(10)) +' AS targetEvent
+                            WHERE targetEvent.Awards = '+ CAST(@targetAwards AS NVARCHAR(10))
+                            EXEC(@SQL)
+                            "; 
             DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
             {
@@ -184,16 +210,15 @@ namespace Lottery_System.Dao
                 sqlDataAdapter.Fill(dt);
                 conn.Close();
             }
-            List<Lottery_System.Model.Employee> employeeList = new List<Lottery_System.Model.Employee>();
+            List<Lottery_System.Model.targetEvent> targetEvents = new List<Lottery_System.Model.targetEvent>();
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                Lottery_System.Model.Employee employee = new Lottery_System.Model.Employee();
-                employee.EventId = Convert.ToInt32(dt.Rows[i]["EventId"]);
-                employee.EmployeeCode = dt.Rows[i]["EmployeeCode"].ToString();
-                employee.Awards = Convert.ToInt32(dt.Rows[i]["Awards"]);
-                employeeList.Add(employee);
+                Lottery_System.Model.targetEvent targetEvent = new Lottery_System.Model.targetEvent();
+                targetEvent.EmployeeCode = dt.Rows[i]["EmployeeCode"].ToString();
+                targetEvent.Awards = Convert.ToInt32(dt.Rows[i]["Awards"]);
+                targetEvents.Add(targetEvent);
             }
-            return employeeList;
+            return targetEvents;
 
         }
 
@@ -208,17 +233,26 @@ namespace Lottery_System.Dao
             awardsInfos = GetAwardsDes(eventId);
             // 由尾獎開始抽
             bool result = true;
-            string sql = @"UPDATE
-                                Emp
+            string sql = @"DECLARE @SQL NVARCHAR(max)
+                            DECLARE @targetEventId int
+                            DECLARE @targetAwardsNum int
+                            DECLARE @targetAwards int
+                            SET @targetEventId = @eventId
+                            SET @targetAwardsNum = @AwardsNum
+                            SET @targetAwards = @Awards
+                            SET @SQL = N'UPDATE
+	                            targetEvent
                             SET
-                                Emp.Awards = @Awards
+	                            targetEvent.Awards = '+ CAST(@targetAwards AS NVARCHAR(10)) +'
                             FROM
-                                Employee AS Emp
+	                            event'+ CAST(@targetEventId AS NVARCHAR(10)) +' AS targetEvent
                             WHERE
-                                Emp.EmployeeCode IN
-	                            (SELECT TOP (@AwardsNum) EmployeeCode FROM Employee
-	                            WHERE Employee.Awards IS NULL AND Employee.EventId = @eventId
-	                            ORDER BY NEWID()) AND Emp.EventId = @eventId";
+	                            targetEvent.EmployeeCode IN
+	                            (SELECT TOP ('+ CAST(@targetAwardsNum AS NVARCHAR(10)) + ') EmployeeCode 
+	                            FROM event'+ CAST(@targetEventId AS NVARCHAR(10)) +' AS subTargetEvent
+	                            WHERE subTargetEvent.Awards IS NULL 
+	                            ORDER BY NEWID())'
+                            EXEC(@SQL)";
             using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
             {
 
@@ -289,7 +323,7 @@ namespace Lottery_System.Dao
                 sql = @"UPDATE
                             EventInfo
                         SET
-                            EventInfo.isSelected = 1
+                            EventInfo.isSelected = 2
                         FROM
                             EventInfo
                         WHERE
@@ -300,7 +334,7 @@ namespace Lottery_System.Dao
                 sql = @"UPDATE
                             EventInfo
                         SET
-                            EventInfo.AwardsDes = @awardsDes
+                            EventInfo.AwardsDes = @awardsDes, EventInfo.isSelected = 1
                         FROM
                             EventInfo
                         WHERE
@@ -361,12 +395,16 @@ namespace Lottery_System.Dao
         /// <returns></returns>
         public List<Lottery_System.Model.AwardsInfo> GetHistoricalEventAwards(string eventId)
         {
-            string sql = @"SELECT Awards, COUNT(Employee.Awards) AS AwardsNum  
-                            FROM Employee
+            string sql = @"DECLARE @SQL NVARCHAR(max)
+                            DECLARE @targetEventId int
+                            SET @targetEventId = @eventId
+                            SET @SQL = N'SELECT Awards, COUNT(targetEvent.Awards) AS AwardsNum  
+                            FROM event'+ CAST(@targetEventId AS NVARCHAR(10)) +' AS targetEvent
                             WHERE
-                                Employee.EventId = @eventId AND Employee.Awards IS NOT NULL
+                                targetEvent.Awards IS NOT NULL
                             GROUP BY Awards
-                            ORDER BY Awards ASC";
+                            ORDER BY Awards ASC'
+                            EXEC(@SQL)";
             DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(this.GetDBConnectString()))
             {
